@@ -15,14 +15,7 @@ export const BPCreditControlForm: React.FC<BPCreditControlFormProps> = ({
   onChange,
 }) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Shield className="h-5 w-5" />
-          <span>Credit Control</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="space-y-4">
         <div>
           <label className="text-sm font-medium text-gray-700 mb-2 block">
             Credit Limit
@@ -54,7 +47,6 @@ export const BPCreditControlForm: React.FC<BPCreditControlFormProps> = ({
             onCheckedChange={(checked) => onChange({ ...data, autoMomoDebit: checked })}
           />
         </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 };

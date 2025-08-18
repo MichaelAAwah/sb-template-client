@@ -7,7 +7,7 @@ import { RefreshCw, Users, Plus, Upload } from 'lucide-react';
 import { BPStats } from './BPStats';
 import { BPFilters } from './BPFilters';
 import { BPTable } from './BPTable';
-import { BPDetailsDialog } from './BPDetailsDialog';
+import { BPDetailsPage } from './BPDetailsPage';
 import { useBusinessPartners, useUpdateBusinessPartner } from '../../hooks/useBusinessPartnerData';
 import { BusinessPartner, BPFilters as FiltersType } from '../../types/businessPartner';
 
@@ -19,12 +19,15 @@ const queryClient = new QueryClient({
       staleTime: 30000,
     },
   },
+  onNavigateToCreate?: () => void;
 });
 
-const BPListContent: React.FC = () => {
+const BPListContent: React.FC<BPListPageProps> = ({
+  onNavigateToCreate,
+}) => {
   const [filters, setFilters] = useState<FiltersType>({});
   const [selectedBP, setSelectedBP] = useState<BusinessPartner | null>(null);
-  const [showBPDetails, setShowBPDetails] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'details'>('list');
 
   const { data: businessPartners, isLoading, refetch, isFetching } = useBusinessPartners(filters);
   const updateBPMutation = useUpdateBusinessPartner();
@@ -38,7 +41,9 @@ const BPListContent: React.FC = () => {
   };
 
   const handleCreateNew = () => {
-    console.log('Navigate to BP creation page');
+    if (onNavigateToCreate) {
+      onNavigateToCreate();
+    }
   };
 
   const handleImport = () => {
@@ -47,7 +52,12 @@ const BPListContent: React.FC = () => {
 
   const handleView = (bp: BusinessPartner) => {
     setSelectedBP(bp);
-    setShowBPDetails(true);
+    setViewMode('details');
+  };
+
+  const handleBackToList = () => {
+    setViewMode('list');
+    setSelectedBP(null);
   };
 
   const handleEdit = (bp: BusinessPartner) => {
@@ -79,6 +89,15 @@ const BPListContent: React.FC = () => {
   const handleSetupAutoDebits = (bp: BusinessPartner) => {
     console.log('Setup auto debits for BP:', bp.id);
   };
+
+  if (viewMode === 'details' && selectedBP) {
+    return (
+      <BPDetailsPage
+        businessPartnerId={selectedBP.id}
+        onBack={handleBackToList}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -177,21 +196,15 @@ const BPListContent: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* BP Details Dialog */}
-        <BPDetailsDialog
-          businessPartner={selectedBP}
-          open={showBPDetails}
-          onOpenChange={setShowBPDetails}
-        />
       </div>
     </div>
   );
 };
 
-export const BPListPage: React.FC = () => {
+export const BPListPage: React.FC<BPListPageProps> = (props) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BPListContent />
+      <BPListContent {...props} />
     </QueryClientProvider>
   );
 };

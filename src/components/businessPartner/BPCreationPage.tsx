@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { LoadingSpinner } from '../ui/loading-spinner';
 import { ArrowLeft, Users, Save, X, RotateCcw, Plus } from 'lucide-react';
 import { BPMasterDataForm } from './BPMasterDataForm';
@@ -12,8 +13,10 @@ import { BPAccountingForm } from './BPAccountingForm';
 import { BPPaymentForm } from './BPPaymentForm';
 import { BPCreditControlForm } from './BPCreditControlForm';
 import { BPDefaultSettingsForm } from './BPDefaultSettingsForm';
+import { BPNotesManager } from './BPNotesManager';
+import { BPUDFManager } from './BPUDFManager';
 import { CreateSalesRepDialog } from './CreateSalesRepDialog';
-import { BusinessPartner, ContactPerson, Address, SalesRep } from '../../types/businessPartner';
+import { BusinessPartner, ContactPerson, Address, SalesRep, BPNote, UserDefinedField } from '../../types/businessPartner';
 import { useCreateBusinessPartner } from '../../hooks/useBusinessPartnerData';
 
 const queryClient = new QueryClient({
@@ -26,6 +29,10 @@ const queryClient = new QueryClient({
   },
 });
 
+interface BPCreationPageProps {
+  onBack?: () => void;
+}
+
 interface BPFormData {
   masterData: BusinessPartner['masterData'];
   general: BusinessPartner['general'];
@@ -36,9 +43,13 @@ interface BPFormData {
   creditControl: BusinessPartner['creditControl'];
   defaultSettings: BusinessPartner['defaultSettings'];
   salesRep?: SalesRep;
+  notes: BPNote[];
+  userDefinedFields: UserDefinedField[];
 }
 
-const BPCreationContent: React.FC = () => {
+const BPCreationContent: React.FC<BPCreationPageProps> = ({
+  onBack,
+}) => {
   const createBPMutation = useCreateBusinessPartner();
   const [showCreateSalesRep, setShowCreateSalesRep] = useState(false);
   
@@ -84,10 +95,16 @@ const BPCreationContent: React.FC = () => {
       defaultDiscount: 0,
       defaultPriceList: '',
     },
+    notes: [],
+    userDefinedFields: [],
+    notes: [],
+    userDefinedFields: [],
   });
 
   const handleBack = () => {
-    console.log('Navigate back to BP list');
+    if (onBack) {
+      onBack();
+    }
   };
 
   const handleSave = async (action: 'save' | 'save-close' | 'save-new') => {
@@ -102,7 +119,9 @@ const BPCreationContent: React.FC = () => {
       
       switch (action) {
         case 'save-close':
-          console.log('Save and navigate back to list');
+          if (onBack) {
+            onBack();
+          }
           break;
         case 'save-new':
           handleClear();
@@ -197,55 +216,252 @@ const BPCreationContent: React.FC = () => {
         </div>
 
         <div className="space-y-6">
-          {/* Master Data */}
-          <BPMasterDataForm
-            data={formData.masterData}
-            onChange={(data) => setFormData(prev => ({ ...prev, masterData: data }))}
-          />
+          <Accordion 
+            type="multiple" 
+            defaultValue={[
+              'master-data', 
+              'general', 
+              'contact-persons', 
+              'addresses', 
+              'accounting', 
+              'payment-billing', 
+              'credit-control', 
+              'default-settings',
+              'notes',
+              'user-defined-fields'
+            ]}
+            className="space-y-4"
+          >
+            {/* Master Data */}
+            <AccordionItem value="master-data" className="border border-gray-200 rounded-lg">
+              <AccordionTrigger className="px-6 hover:no-underline">
+                <span className="text-lg font-semibold">Master Data</span>
+              </AccordionTrigger>
+              <AccordionContent className="px-6">
+                <BPMasterDataForm
+                  data={formData.masterData}
+                  onChange={(data) => setFormData(prev => ({ ...prev, masterData: data }))}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
-          {/* General Information */}
-          <BPGeneralForm
-            data={formData.general}
-            onChange={(data) => setFormData(prev => ({ ...prev, general: data }))}
-          />
+            {/* General Information */}
+            <AccordionItem value="general" className="border border-gray-200 rounded-lg">
+              <AccordionTrigger className="px-6 hover:no-underline">
+                <span className="text-lg font-semibold">General Information</span>
+              </AccordionTrigger>
+              <AccordionContent className="px-6">
+                <BPGeneralForm
+                  data={formData.general}
+                  onChange={(data) => setFormData(prev => ({ ...prev, general: data }))}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
-          {/* Contact Persons */}
-          <BPContactPersonsForm
-            contactPersons={formData.contactPersons}
-            onChange={(contactPersons) => setFormData(prev => ({ ...prev, contactPersons }))}
-          />
+            {/* Contact Persons */}
+            <AccordionItem value="contact-persons" className="border border-gray-200 rounded-lg">
+              <AccordionTrigger className="px-6 hover:no-underline">
+                <span className="text-lg font-semibold">Contact Persons</span>
+              </AccordionTrigger>
+              <AccordionContent className="px-6">
+                <BPContactPersonsForm
+                  contactPersons={formData.contactPersons}
+                  onChange={(contactPersons) => setFormData(prev => ({ ...prev, contactPersons }))}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
-          {/* Addresses */}
-          <BPAddressesForm
-            addresses={formData.addresses}
-            onChange={(addresses) => setFormData(prev => ({ ...prev, addresses }))}
-          />
+            {/* Addresses */}
+            <AccordionItem value="addresses" className="border border-gray-200 rounded-lg">
+              <AccordionTrigger className="px-6 hover:no-underline">
+                <span className="text-lg font-semibold">Addresses</span>
+              </AccordionTrigger>
+              <AccordionContent className="px-6">
+                <BPAddressesForm
+                  addresses={formData.addresses}
+                  onChange={(addresses) => setFormData(prev => ({ ...prev, addresses }))}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
-          {/* Accounting */}
-          <BPAccountingForm
-            data={formData.accounting}
-            onChange={(data) => setFormData(prev => ({ ...prev, accounting: data }))}
-          />
+            {/* Accounting */}
+            <AccordionItem value="accounting" className="border border-gray-200 rounded-lg">
+              <AccordionTrigger className="px-6 hover:no-underline">
+                <span className="text-lg font-semibold">Accounting</span>
+              </AccordionTrigger>
+              <AccordionContent className="px-6">
+                <BPAccountingForm
+                  data={formData.accounting}
+                  onChange={(data) => setFormData(prev => ({ ...prev, accounting: data }))}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
-          {/* Payment and Billing */}
-          <BPPaymentForm
-            data={formData.paymentAndBilling}
-            onChange={(data) => setFormData(prev => ({ ...prev, paymentAndBilling: data }))}
-          />
+            {/* Payment and Billing */}
+            <AccordionItem value="payment-billing" className="border border-gray-200 rounded-lg">
+              <AccordionTrigger className="px-6 hover:no-underline">
+                <span className="text-lg font-semibold">Payment & Billing</span>
+              </AccordionTrigger>
+              <AccordionContent className="px-6">
+                <BPPaymentForm
+                  data={formData.paymentAndBilling}
+                  onChange={(data) => setFormData(prev => ({ ...prev, paymentAndBilling: data }))}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
-          {/* Credit Control */}
-          <BPCreditControlForm
-            data={formData.creditControl}
-            onChange={(data) => setFormData(prev => ({ ...prev, creditControl: data }))}
-          />
+            {/* Credit Control */}
+            <AccordionItem value="credit-control" className="border border-gray-200 rounded-lg">
+              <AccordionTrigger className="px-6 hover:no-underline">
+                <span className="text-lg font-semibold">Credit Control</span>
+              </AccordionTrigger>
+              <AccordionContent className="px-6">
+                <BPCreditControlForm
+                  data={formData.creditControl}
+                  onChange={(data) => setFormData(prev => ({ ...prev, creditControl: data }))}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
-          {/* Default Settings */}
-          <BPDefaultSettingsForm
-            data={formData.defaultSettings}
-            salesRep={formData.salesRep}
-            onChange={(data) => setFormData(prev => ({ ...prev, defaultSettings: data }))}
-            onSalesRepChange={(salesRep) => setFormData(prev => ({ ...prev, salesRep }))}
-          />
+            {/* Default Settings */}
+            <AccordionItem value="default-settings" className="border border-gray-200 rounded-lg">
+              <AccordionTrigger className="px-6 hover:no-underline">
+                <span className="text-lg font-semibold">Default Settings</span>
+              </AccordionTrigger>
+              <AccordionContent className="px-6">
+                <BPDefaultSettingsForm
+                  data={formData.defaultSettings}
+                  salesRep={formData.salesRep}
+                  onChange={(data) => setFormData(prev => ({ ...prev, defaultSettings: data }))}
+                  onSalesRepChange={(salesRep) => setFormData(prev => ({ ...prev, salesRep }))}
+                />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Notes */}
+            <AccordionItem value="notes" className="border border-gray-200 rounded-lg">
+              <AccordionTrigger className="px-6 hover:no-underline">
+                <span className="text-lg font-semibold">Notes</span>
+              </AccordionTrigger>
+              <AccordionContent className="px-6">
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Note:</strong> Notes added here will be saved when the business partner is created.
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  {formData.notes.map((note, index) => (
+                    <div key={note.id} className="p-3 border border-gray-200 rounded-lg bg-gray-50">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">{note.subject}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{note.note}</p>
+                          <p className="text-xs text-gray-500 mt-2">
+                            Action Date: {format(new Date(note.actionDate), 'MMM dd, yyyy')}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const newNotes = formData.notes.filter((_, i) => i !== index);
+                            setFormData(prev => ({ ...prev, notes: newNotes }));
+                          }}
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const newNote: BPNote = {
+                        id: `temp-note-${Date.now()}`,
+                        bpId: '',
+                        completed: false,
+                        dateOfEntry: new Date().toISOString(),
+                        actionDate: new Date().toISOString().split('T')[0],
+                        subject: 'New Note',
+                        note: 'Note content...',
+                        createdBy: 'Current User',
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                      };
+                      setFormData(prev => ({ ...prev, notes: [...prev.notes, newNote] }));
+                    }}
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Note (Preview)
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* User Defined Fields */}
+            <AccordionItem value="user-defined-fields" className="border border-gray-200 rounded-lg">
+              <AccordionTrigger className="px-6 hover:no-underline">
+                <span className="text-lg font-semibold">User Defined Fields</span>
+              </AccordionTrigger>
+              <AccordionContent className="px-6">
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Note:</strong> User defined fields added here will be saved when the business partner is created.
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  {formData.userDefinedFields.map((udf, index) => (
+                    <div key={udf.id} className="p-3 border border-gray-200 rounded-lg bg-gray-50">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">{udf.name}</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Category: {udf.category} | Type: {udf.type}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Value: {String(udf.value)}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const newUDFs = formData.userDefinedFields.filter((_, i) => i !== index);
+                            setFormData(prev => ({ ...prev, userDefinedFields: newUDFs }));
+                          }}
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const newUDF: UserDefinedField = {
+                        id: `temp-udf-${Date.now()}`,
+                        category: 'Text Information',
+                        name: 'Sample Field',
+                        type: 'text',
+                        value: 'Sample Value',
+                        description: 'Sample description',
+                      };
+                      setFormData(prev => ({ ...prev, userDefinedFields: [...prev.userDefinedFields, newUDF] }));
+                    }}
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Field (Preview)
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
           {/* Footer Actions */}
           <Card>
@@ -311,10 +527,10 @@ const BPCreationContent: React.FC = () => {
   );
 };
 
-export const BPCreationPage: React.FC = () => {
+export const BPCreationPage: React.FC<BPCreationPageProps> = (props) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BPCreationContent />
+      <BPCreationContent {...props} />
     </QueryClientProvider>
   );
 };

@@ -60,6 +60,71 @@ const generateMockBusinessPartner = (index: number): BusinessPartner => {
   const balance = (Math.random() - 0.5) * 50000; // Can be positive or negative
   const creditLimit = Math.floor(Math.random() * 100000) + 10000;
   
+  // Generate mock notes
+  const notes: BPNote[] = Array.from({ length: Math.floor(Math.random() * 5) + 1 }, (_, noteIndex) => {
+    const subjects = ['Follow up call', 'Credit review', 'Contract renewal', 'Payment reminder', 'Meeting scheduled'];
+    const noteTexts = [
+      'Customer requested extended payment terms',
+      'Discussed new product offerings',
+      'Reviewed credit limit increase request',
+      'Scheduled quarterly business review',
+      'Updated contact information'
+    ];
+    
+    const dateOfEntry = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+    const actionDate = new Date(dateOfEntry.getTime() + Math.random() * 14 * 24 * 60 * 60 * 1000);
+    
+    return {
+      id: `note-${index}-${noteIndex}`,
+      bpId: `bp-${1000 + index}`,
+      completed: Math.random() > 0.3,
+      dateOfEntry: dateOfEntry.toISOString(),
+      actionDate: actionDate.toISOString().split('T')[0],
+      subject: subjects[noteIndex % subjects.length],
+      note: noteTexts[noteIndex % noteTexts.length],
+      attachment: Math.random() > 0.8 ? `attachment-${noteIndex}.pdf` : undefined,
+      createdBy: 'System Admin',
+      createdAt: dateOfEntry.toISOString(),
+      updatedAt: dateOfEntry.toISOString(),
+    };
+  });
+  
+  // Generate mock user defined fields
+  const userDefinedFields: UserDefinedField[] = [
+    {
+      id: `udf-${index}-1`,
+      category: 'Text Information',
+      name: 'Type of Customer',
+      type: 'text',
+      value: ['Premium', 'Standard', 'Basic'][Math.floor(Math.random() * 3)],
+      description: 'Customer tier classification'
+    },
+    {
+      id: `udf-${index}-2`,
+      category: 'Numeric Information',
+      name: 'Target Sales',
+      type: 'numeric',
+      value: Math.floor(Math.random() * 100000) + 10000,
+      description: 'Annual sales target'
+    },
+    {
+      id: `udf-${index}-3`,
+      category: 'Yes/No Information',
+      name: 'Discount Applies',
+      type: 'boolean',
+      value: Math.random() > 0.5,
+      description: 'Whether customer is eligible for discounts'
+    },
+    {
+      id: `udf-${index}-4`,
+      category: 'Date Information',
+      name: 'Customer Onboarding Date',
+      type: 'date',
+      value: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
+      description: 'Date when customer was onboarded'
+    },
+  ];
+  
   return {
     id: `bp-${1000 + index}`,
     masterData: {
@@ -138,6 +203,8 @@ const generateMockBusinessPartner = (index: number): BusinessPartner => {
     salesRep,
     status: Math.random() > 0.1 ? 'Active' : 'Inactive',
     balance,
+    notes,
+    userDefinedFields,
     createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -265,6 +332,8 @@ export const createBusinessPartner = async (bp: Omit<BusinessPartner, 'id' | 'cr
   const newBP: BusinessPartner = {
     ...bp,
     id: `bp-${Date.now()}`,
+    notes: bp.notes || [],
+    userDefinedFields: bp.userDefinedFields || [],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -303,6 +372,78 @@ export const createSalesRep = async (rep: Omit<SalesRep, 'id'>): Promise<SalesRe
   return newRep;
 };
 
+// Notes API functions
+export const fetchBPNotes = async (bpId: string): Promise<BPNote[]> => {
+  await new Promise(resolve => setTimeout(resolve, 400));
+  const bp = mockBusinessPartners.find(bp => bp.id === bpId);
+  return bp?.notes || [];
+};
+
+export const createBPNote = async (bpId: string, noteData: Omit<BPNote, 'id' | 'bpId' | 'createdAt' | 'updatedAt'>): Promise<BPNote> => {
+  await new Promise(resolve => setTimeout(resolve, 600));
+  
+  const newNote: BPNote = {
+    ...noteData,
+    id: `note-${Date.now()}`,
+    bpId,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  
+  const bpIndex = mockBusinessPartners.findIndex(bp => bp.id === bpId);
+  if (bpIndex !== -1) {
+    mockBusinessPartners[bpIndex].notes.unshift(newNote);
+  }
+  
+  return newNote;
+};
+
+export const updateBPNote = async (bpId: string, noteId: string, updates: Partial<BPNote>): Promise<BPNote> => {
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const bpIndex = mockBusinessPartners.findIndex(bp => bp.id === bpId);
+  if (bpIndex === -1) throw new Error('Business partner not found');
+  
+  const noteIndex = mockBusinessPartners[bpIndex].notes.findIndex(note => note.id === noteId);
+  if (noteIndex === -1) throw new Error('Note not found');
+  
+  const updatedNote = {
+    ...mockBusinessPartners[bpIndex].notes[noteIndex],
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+  
+  mockBusinessPartners[bpIndex].notes[noteIndex] = updatedNote;
+  return updatedNote;
+};
+
+export const deleteBPNote = async (bpId: string, noteId: string): Promise<void> => {
+  await new Promise(resolve => setTimeout(resolve, 400));
+  
+  const bpIndex = mockBusinessPartners.findIndex(bp => bp.id === bpId);
+  if (bpIndex !== -1) {
+    mockBusinessPartners[bpIndex].notes = mockBusinessPartners[bpIndex].notes.filter(note => note.id !== noteId);
+  }
+};
+
+// User Defined Fields API functions
+export const fetchBPUDFs = async (bpId: string): Promise<UserDefinedField[]> => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  const bp = mockBusinessPartners.find(bp => bp.id === bpId);
+  return bp?.userDefinedFields || [];
+};
+
+export const updateBPUDFs = async (bpId: string, udfs: UserDefinedField[]): Promise<UserDefinedField[]> => {
+  await new Promise(resolve => setTimeout(resolve, 600));
+  
+  const bpIndex = mockBusinessPartners.findIndex(bp => bp.id === bpId);
+  if (bpIndex === -1) throw new Error('Business partner not found');
+  
+  mockBusinessPartners[bpIndex].userDefinedFields = udfs;
+  mockBusinessPartners[bpIndex].updatedAt = new Date().toISOString();
+  
+  return udfs;
+};
 // Helper functions
 export const getInitials = (name: string): string => {
   return name

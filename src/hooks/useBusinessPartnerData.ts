@@ -8,7 +8,9 @@ import {
   BPStats,
   BPGroup,
   PriceList,
-  SalesRep
+  SalesRep,
+  BPNote,
+  UserDefinedField
 } from '../types/businessPartner';
 import { 
   fetchBusinessPartners,
@@ -19,6 +21,12 @@ import {
   createBusinessPartner,
   updateBusinessPartner,
   createSalesRep,
+  fetchBPNotes,
+  createBPNote,
+  updateBPNote,
+  deleteBPNote,
+  fetchBPUDFs,
+  updateBPUDFs,
   mockBPStats,
   mockBPGroups,
   mockPriceLists,
@@ -150,6 +158,76 @@ export const useCreateSalesRep = () => {
     mutationFn: createSalesRep,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['salesReps'] });
+    },
+  });
+};
+
+// Notes hooks
+export const useBPNotes = (bpId: string) => {
+  return useQuery({
+    queryKey: ['bpNotes', bpId],
+    queryFn: () => fetchBPNotes(bpId),
+    enabled: !!bpId,
+    staleTime: 60000,
+  });
+};
+
+export const useCreateBPNote = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ bpId, noteData }: { bpId: string; noteData: Omit<BPNote, 'id' | 'bpId' | 'createdAt' | 'updatedAt'> }) => 
+      createBPNote(bpId, noteData),
+    onSuccess: (_, { bpId }) => {
+      queryClient.invalidateQueries({ queryKey: ['bpNotes', bpId] });
+      queryClient.invalidateQueries({ queryKey: ['businessPartner', bpId] });
+    },
+  });
+};
+
+export const useUpdateBPNote = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ bpId, noteId, updates }: { bpId: string; noteId: string; updates: Partial<BPNote> }) => 
+      updateBPNote(bpId, noteId, updates),
+    onSuccess: (_, { bpId }) => {
+      queryClient.invalidateQueries({ queryKey: ['bpNotes', bpId] });
+    },
+  });
+};
+
+export const useDeleteBPNote = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ bpId, noteId }: { bpId: string; noteId: string }) => 
+      deleteBPNote(bpId, noteId),
+    onSuccess: (_, { bpId }) => {
+      queryClient.invalidateQueries({ queryKey: ['bpNotes', bpId] });
+    },
+  });
+};
+
+// User Defined Fields hooks
+export const useBPUDFs = (bpId: string) => {
+  return useQuery({
+    queryKey: ['bpUDFs', bpId],
+    queryFn: () => fetchBPUDFs(bpId),
+    enabled: !!bpId,
+    staleTime: 300000,
+  });
+};
+
+export const useUpdateBPUDFs = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ bpId, udfs }: { bpId: string; udfs: UserDefinedField[] }) => 
+      updateBPUDFs(bpId, udfs),
+    onSuccess: (_, { bpId }) => {
+      queryClient.invalidateQueries({ queryKey: ['bpUDFs', bpId] });
+      queryClient.invalidateQueries({ queryKey: ['businessPartner', bpId] });
     },
   });
 };

@@ -44,6 +44,8 @@ export interface BusinessPartner {
   salesRep?: SalesRep;
   status: 'Active' | 'Inactive';
   balance: number;
+  notes: BPNote[];
+  userDefinedFields: UserDefinedField[];
   createdAt: string;
   updatedAt: string;
 }
@@ -98,13 +100,17 @@ export interface BPNote {
   note: string;
   attachment?: string;
   createdBy: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UserDefinedField {
   id: string;
+  category: 'Text Information' | 'Numeric Information' | 'Yes/No Information' | 'Date Information';
   name: string;
   type: 'text' | 'numeric' | 'boolean' | 'date';
   value: string | number | boolean | Date;
+  description?: string;
 }
 
 export interface BPTransaction {

@@ -50,20 +50,13 @@ export const BPAddressesForm: React.FC<BPAddressesFormProps> = ({
   ];
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center space-x-2">
-            <MapPin className="h-5 w-5" />
-            <span>Addresses</span>
-          </CardTitle>
+    <div>
+        <div className="flex items-center justify-between mb-4">
           <Button onClick={addAddress} size="sm" className="bg-blue-600 hover:bg-blue-700">
             <Plus className="h-4 w-4 mr-2" />
             Add Address
           </Button>
         </div>
-      </CardHeader>
-      <CardContent>
         {addresses.length === 0 ? (
           <div className="text-center py-8 text-gray-500 border border-dashed rounded-lg">
             No addresses added yet. Click "Add Address" to get started.
@@ -234,7 +227,6 @@ export const BPAddressesForm: React.FC<BPAddressesFormProps> = ({
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+    </div>
   );
 };

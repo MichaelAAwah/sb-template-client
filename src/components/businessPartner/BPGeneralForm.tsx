@@ -13,11 +13,7 @@ export const BPGeneralForm: React.FC<BPGeneralFormProps> = ({
   onChange,
 }) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>General Information</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">
@@ -101,7 +97,6 @@ export const BPGeneralForm: React.FC<BPGeneralFormProps> = ({
             />
           </div>
         </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 };

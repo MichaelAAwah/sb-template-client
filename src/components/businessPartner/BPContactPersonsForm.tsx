@@ -50,20 +50,13 @@ export const BPContactPersonsForm: React.FC<BPContactPersonsFormProps> = ({
   const titles = ['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Prof.', 'Eng.'];
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center space-x-2">
-            <User className="h-5 w-5" />
-            <span>Contact Persons</span>
-          </CardTitle>
+    <div>
+        <div className="flex items-center justify-between mb-4">
           <Button onClick={addContactPerson} size="sm" className="bg-blue-600 hover:bg-blue-700">
             <Plus className="h-4 w-4 mr-2" />
             Add Contact
           </Button>
         </div>
-      </CardHeader>
-      <CardContent>
         {contactPersons.length === 0 ? (
           <div className="text-center py-8 text-gray-500 border border-dashed rounded-lg">
             No contact persons added yet. Click "Add Contact" to get started.
@@ -253,7 +246,6 @@ export const BPContactPersonsForm: React.FC<BPContactPersonsFormProps> = ({
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+    </div>
   );
 };

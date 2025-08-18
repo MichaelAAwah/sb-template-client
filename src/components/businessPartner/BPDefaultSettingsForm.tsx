@@ -38,14 +38,7 @@ export const BPDefaultSettingsForm: React.FC<BPDefaultSettingsFormProps> = ({
   ];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Settings className="h-5 w-5" />
-          <span>Default Settings</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="space-y-6">
         {/* Statement Settings */}
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">Statement Settings</h3>
@@ -179,7 +172,6 @@ export const BPDefaultSettingsForm: React.FC<BPDefaultSettingsFormProps> = ({
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 };
