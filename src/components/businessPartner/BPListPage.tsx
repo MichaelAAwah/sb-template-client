@@ -11,6 +11,10 @@ import { BPDetailsPage } from './BPDetailsPage';
 import { useBusinessPartners, useUpdateBusinessPartner } from '../../hooks/useBusinessPartnerData';
 import { BusinessPartner, BPFilters as FiltersType } from '../../types/businessPartner';
 
+interface BPListPageProps {
+  onNavigateToCreate?: () => void;
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -19,7 +23,6 @@ const queryClient = new QueryClient({
       staleTime: 30000,
     },
   },
-  onNavigateToCreate?: () => void;
 });
 
 const BPListContent: React.FC<BPListPageProps> = ({
