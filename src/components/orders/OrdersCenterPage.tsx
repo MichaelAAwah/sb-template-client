@@ -3,13 +3,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { LoadingSpinner } from '../ui/loading-spinner';
-import { RefreshCw, Package } from 'lucide-react';
+import { RefreshCw, Package, Plus } from 'lucide-react';
 import { OrdersStats } from './OrdersStats';
 import { OrdersFilters } from './OrdersFilters';
 import { OrdersTable } from './OrdersTable';
 import { OrderDetailsDialog } from './OrderDetailsDialog';
 import { AssignOrderDialog } from './AssignOrderDialog';
 import { OrderActionDialog } from './OrderActionDialog';
+import { OrderCreationPage } from './OrderCreationPage';
 import { useOrders } from '../../hooks/useOrdersData';
 import { Order, OrderFilters } from '../../types/orders';
 
@@ -30,6 +31,7 @@ const OrdersCenterContent: React.FC = () => {
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [showActionDialog, setShowActionDialog] = useState(false);
   const [currentAction, setCurrentAction] = useState<'issue' | 'dispatch' | 'fulfill' | 'cancel' | null>(null);
+  const [showCreateOrder, setShowCreateOrder] = useState(false);
 
   const { data: orders, isLoading, refetch, isFetching } = useOrders(filters);
 
@@ -61,6 +63,11 @@ const OrdersCenterContent: React.FC = () => {
     refetch();
   };
 
+  // Show creation page if requested
+  if (showCreateOrder) {
+    return <OrderCreationPage onBack={() => setShowCreateOrder(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -76,15 +83,24 @@ const OrdersCenterContent: React.FC = () => {
                 <p className="text-gray-600">Manage customer orders from placement to delivery</p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleRefresh}
-              disabled={isFetching}
-              className="flex items-center space-x-2"
-            >
-              <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
-              <span>Refresh</span>
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button
+                onClick={() => setShowCreateOrder(true)}
+                className="bg-blue-600 hover:bg-blue-700 flex items-center space-x-2"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Create Order</span>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleRefresh}
+                disabled={isFetching}
+                className="flex items-center space-x-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </Button>
+            </div>
           </div>
         </div>
 
